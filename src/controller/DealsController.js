@@ -1,6 +1,7 @@
 import { json2xml } from 'xml-js';
 import axios from 'axios';
 import DealSchema from '../model/DealSchema.js';
+import pipedriveService from "../services/PipedriveService.js";
 
 class DealsController {
   async _publishBling(deals) {
@@ -66,6 +67,31 @@ class DealsController {
 
         await dealSchema.save();
       };
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  async publish(req, res) {
+    const deals = await pipedriveService.getDealsWon();
+
+    await Promise.all([
+      this._publishBling(deals),
+      this._saveDeal(deals),
+    ]);
+
+    res.status(201).json({
+      message: 'published',
+    });
+  };
+
+  async list(req, res) {
+    try {
+      const resultPerDay = await DealSchema.find();
+
+      res.status(200).json({
+        resultPerDay,
+      });
     } catch (error) {
       console.log(error);
     }
